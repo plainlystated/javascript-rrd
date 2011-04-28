@@ -8,15 +8,21 @@ RRDReader = require('./rrdFile.js').RRDFile
 class RRD
   constructor: (@filename) ->
 
+  create: (ds, rra, cb) ->
+    cmd = "rrdtool create #{@filename} --start #{_rrdTime(new Date)} --step 5 #{ds} #{rra}"
+    console.log " - #{cmd}"
+    exec(cmd, cb)
+
   destroy: (cb) ->
     fs.unlink(@filename, cb)
 
-  create: (ds, rra, cb) ->
-    exec("rrdtool create #{@filename} --start #{(new Date).valueOf()} --step 1 #{ds} #{rra}", cb)
+  rrdExec: (command, cmd_args, cb) ->
+    cmd = "rrdtool #{command} #{@filename} #{cmd_args}"
+    console.log cmd
+    exec cmd, cb
 
   update: (time, value, cb) ->
-    # exec("rrdtool update #{@filename} #{time.valueOf()}:#{value}", cb)
-    this._rrdExec("update", "#{time.valueOf()}:#{value}", cb)
+    this.rrdExec("update", "#{_rrdTime(time)}:#{value}", cb)
 
   fetch: (cb) ->
     datasources = {}
@@ -25,9 +31,9 @@ class RRD
       rrdReader = new RRDReader(binfile)
       numDatasources = rrdReader.getNrDSs()
 
-      cb _datasource_info(rrdReader, datasourceNum) for datasourceNum in [0..numDatasources-1]
+      cb _datasourceInfo(rrdReader, datasourceNum) for datasourceNum in [0..numDatasources-1]
 
-  _datasource_info = (rrdReader, dsNum) ->
+  _datasourceInfo = (rrdReader, dsNum) ->
     datasource = rrdReader.getDS(dsNum)
 
     values = []
@@ -40,11 +46,8 @@ class RRD
     result[datasource.getName()] = values
     return result
 
-  _rrdExec: (command, cmd_args, cb) ->
-    cmd = "rrdtool #{command} #{@filename} #{cmd_args}"
-    console.log cmd
-    # exec(cmd, (err, stdout, stdin) ->
-    #   console.log err)
-    exec cmd, cb
+
+  _rrdTime = (date) ->
+    return Math.round(date.valueOf() / 1000)
 
 exports.RRD = RRD
