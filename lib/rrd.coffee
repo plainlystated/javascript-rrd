@@ -8,8 +8,8 @@ RRDReader = require('./rrdFile.js').RRDFile
 class RRD
   constructor: (@filename) ->
 
-  create: (ds1, ds2, rra_day, rra_month, cb) ->
-    cmd = "rrdtool create #{@filename} --start #{_rrdTime(new Date)} --step 300 #{ds1} #{ds2} #{rra_day} #{rra_month}"
+  create: (ds1, ds2, ds3, rra_day, rra_month, cb) ->
+    cmd = "rrdtool create #{@filename} --start #{_rrdTime(new Date)} --step 300 #{ds1} #{ds2} #{ds3} #{rra_day} #{rra_month}"
     console.log " - #{cmd}"
     exec(cmd, cb)
 
@@ -21,8 +21,8 @@ class RRD
     console.log cmd
     exec cmd, cb
 
-  update: (time, value1, value2, cb) ->
-    this.rrdExec("update", "#{_rrdTime(time)}:#{value1}:#{value2}", cb)
+  update: (time, value1, value2, value3, cb) ->
+    this.rrdExec("update", "#{_rrdTime(time)}:#{value1}:#{value2}:#{value3}", cb)
 
   fetch: (cb) ->
     datasources = {}
