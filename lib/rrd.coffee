@@ -8,8 +8,8 @@ RRDReader = require('./rrdFile.js').RRDFile
 class RRD
   constructor: (@filename) ->
 
-  create: (ds1, ds2, ds3, rra_day, rra_month, cb) ->
-    cmd = "rrdtool create #{@filename} --start #{_rrdTime(new Date)} --step 300 #{ds1} #{ds2} #{ds3} #{rra_day} #{rra_month}"
+  create: (rrdArgs, cb) ->
+    cmd = "rrdtool create #{@filename} --start #{_rrdTime(new Date)} --step 300 #{rrdArgs.join(" ")}"
     console.log " - #{cmd}"
     exec(cmd, cb)
 
@@ -33,6 +33,11 @@ class RRD
 
       cb _datasourceInfo(rrdReader, datasourceNum) for datasourceNum in [0..numDatasources-1]
 
+  graph: (graphFilename, lines, cb) ->
+    cmd = "rrdtool graph #{graphFilename} #{(this._rrdGraphLine(line) for line in lines).join(" ")}"
+    console.log cmd
+    exec cmd, cb
+
   _datasourceInfo = (rrdReader, dsNum) ->
     datasource = rrdReader.getDS(dsNum)
 
@@ -46,6 +51,8 @@ class RRD
     result[datasource.getName()] = values
     return result
 
+  _rrdGraphLine: (line) =>
+    return "DEF:#{line.name}=#{@filename}:#{line.name}:AVERAGE LINE2:#{line.name}#{line.color}"
 
   _rrdTime = (date) ->
     return Math.round(date.valueOf() / 1000)
