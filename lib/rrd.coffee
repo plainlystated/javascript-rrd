@@ -33,8 +33,8 @@ class RRD
 
       cb _datasourceInfo(rrdReader, datasourceNum) for datasourceNum in [0..numDatasources-1]
 
-  graph: (graphFilename, lines, cb) ->
-    cmd = "rrdtool graph #{graphFilename} #{(this._rrdGraphLine(line) for line in lines).join(" ")}"
+  graph: (graphFilename, lines, options, cb) ->
+    cmd = "rrdtool graph #{graphFilename} #{(this._rrdGraphLine(line) for line in lines).join(" ")} --start #{options.start.getDate()}.#{options.start.getMonth() + 1}.#{options.start.getFullYear()}"
     console.log cmd
     exec cmd, cb
 
