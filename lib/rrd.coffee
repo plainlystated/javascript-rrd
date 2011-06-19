@@ -16,6 +16,9 @@ class RRD
   destroy: (cb) ->
     fs.unlink(@filename, cb)
 
+  dump: (cb) ->
+    this.rrdExec("dump", "", cb)
+
   rrdExec: (command, cmd_args, cb) ->
     cmd = "rrdtool #{command} #{@filename} #{cmd_args}"
     console.log cmd
