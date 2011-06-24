@@ -1,4 +1,4 @@
 class RRDRecord
-  constructor: (@date, @fieldNames) ->
+  constructor: (@timestamp, @fieldNames) ->
 
 exports.RRDRecord = RRDRecord
