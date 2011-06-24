@@ -1,9 +1,11 @@
 sys = require('sys')
 exec = require('child_process').exec
+spawn = require('child_process').spawn
 fs = require('fs')
 
 binaryRRDFile = require('./binaryFile.js')
 RRDReader = require('./rrdFile.js').RRDFile
+RRDRecord = require('./rrdRecord').RRDRecord
 
 class RRD
   constructor: (@filename) ->
@@ -27,14 +29,23 @@ class RRD
   update: (time, value1, value2, value3, cb) ->
     this.rrdExec("update", "#{_rrdTime(time)}:#{value1}:#{value2}:#{value3}", cb)
 
-  fetch: (cb) ->
-    datasources = {}
+  fetch: (start, end, cb) ->
+    this.rrdExec "fetch", "AVERAGE --start #{start} --end #{end}", (err, data) ->
+      lines = data.split("\n")
+      fieldNames = lines.shift().replace(new RegExp("^ +"), "").split(new RegExp(" +"))
+      lines.shift()
 
-    binaryRRDFile.FetchBinaryURLAsync @filename, (binfile) ->
-      rrdReader = new RRDReader(binfile)
-      numDatasources = rrdReader.getNrDSs()
+      records = for line in lines
+        continue if line == ""
+        continue if line.match(" nan ")
 
-      cb _datasourceInfo(rrdReader, datasourceNum) for datasourceNum in [0..numDatasources-1]
+        fields = line.split(new RegExp("[: ]+"))
+        record = new RRDRecord(fields.shift(), fieldNames)
+        for i in [0..fields.length-1]
+          record[fieldNames[i]] = fields[i]
+        record
+
+      cb(records)
 
   graph: (graphFilename, lines, options, cb) ->
     cmd = "rrdtool graph #{graphFilename} #{(this._rrdGraphLine(line) for line in lines).join(" ")} --start #{options.start.getDate()}.#{options.start.getMonth() + 1}.#{options.start.getFullYear()}"
