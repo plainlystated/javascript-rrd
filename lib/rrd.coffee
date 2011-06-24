@@ -48,7 +48,7 @@ class RRD
       cb(records)
 
   graph: (graphFilename, lines, options, cb) ->
-    cmd = "rrdtool graph #{graphFilename} #{(this._rrdGraphLine(line) for line in lines).join(" ")} --start #{options.start.getDate()}.#{options.start.getMonth() + 1}.#{options.start.getFullYear()}"
+    cmd = "rrdtool graph #{graphFilename} #{(this._rrdGraphLine(line) for line in lines).join(" ")} --start #{options.start}"
     console.log cmd
     exec cmd, cb
 
