@@ -60,4 +60,6 @@ class RRD
   _rrdTime = (date) ->
     return Math.round(date.valueOf() / 1000)
 
+RRD.restore = (filenameXML, filenameRRD, cb) ->
+  exec "rrdtool restore #{filenameXML} #{filenameRRD}", cb
 exports.RRD = RRD
